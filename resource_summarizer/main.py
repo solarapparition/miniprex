@@ -1,19 +1,11 @@
 """Create a resource summarizer for a text file."""
 
-from argparse import ArgumentParser, Namespace
+from pathlib import Path
+from typing import Sequence
 
+from llama_index import Document
 from resource_summarizer.summarizer import create_summarizer
 
-
-
-
-
-
-
-
-from pathlib import Path
-from llama_index import Document
-from typing import Hashable, Sequence
 
 def main() -> None:
     """Demos the creating of a resource summarizer for a text file."""
@@ -28,7 +20,7 @@ def main() -> None:
         return documents
 
 
-    from schema import Layer, Partition
+    from resource_summarizer.schema import Layer, Partition
     breakpoint()
     def partition(layer: Layer) -> Partition:
         breakpoint()
@@ -40,7 +32,6 @@ if __name__ == "__main__":
     main()
 breakpoint()
 
-from pathlib import Path
 
 chunks = Path("data/paul_graham_essay.txt").read_text().split("\n\n")
 chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
@@ -81,6 +72,7 @@ layers[1] = abstract_layer(layers[0])
 
 # take in list of chunks as input
 # ....
-# >
+# > 
+# > add retriever and chat engine to summarizer object
 # set up layered indexing system
 # readme: different spin on tree index
