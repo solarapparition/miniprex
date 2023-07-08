@@ -8,11 +8,8 @@ from resource_summarizer.summarizer import create_summarizer
 
 
 
-from argparse import ArgumentParser, Namespace
 
 
-def get_args() -> Namespace:
-    """Get the command line arguments."""
 
     parser = ArgumentParser()
     parser.add_argument(
