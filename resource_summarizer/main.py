@@ -1,19 +1,17 @@
-from typing import Sequence
-from typing import Callable
-from typing import Any
+"""Creation of resource summarization."""
 
-
-from llama_index.schema import TextNode
-from llama_index.indices.base import BaseIndex
-
-Block = Sequence[TextNode]
-Partition = Sequence[Block]
-
+from dataclasses import dataclass
+from typing import Any, Callable, Hashable, Sequence, Tuple, Union
 
 from llama_index import Document
+from llama_index.schema import TextNode
+from llama_index.indices.base import BaseIndex
+from llama_index.response.schema import RESPONSE_TYPE as LLAMA_INDEX_RESPONSE_TYPE
 
-from typing import Tuple
-
+IngestionStrategy = Callable[[Hashable], Sequence[Document]]
+PersistenceStrategy = Callable[[BaseIndex[Any]], None]
+Block = Sequence[TextNode]
+Partition = Sequence[Block]
 Layer = Tuple[Sequence[Document], BaseIndex[Any]]
 PartitionStrategy = Callable[[Layer], Partition]
 SummarizationStrategy = Callable[[Block], Document]
@@ -54,25 +52,6 @@ def create_layers(
             create_next_layer(current_layer, partition, summarize, create_index)
         )
     return layers
-    # layers = [initial_layer]
-    # for _ in range(n_layers):
-    #     current_layer = layers[-1]
-    #     last_layer_docs, _ = current_layer
-    #     if len(last_layer_docs) == 1:
-    #         break
-    #     layers.append(create_next_layer(current_layer, partition, summarize, create_index))
-
-    # return layers
-
-
-# from llama_index.node_parser import NodeParser
-from typing import Hashable
-
-IngestionStrategy = Callable[[Hashable], Sequence[Document]]
-PersistenceStrategy = Callable[[BaseIndex[Any]], None]
-
-from llama_index.response.schema import RESPONSE_TYPE as LLAMA_INDEX_RESPONSE_TYPE
-from dataclasses import dataclass
 
 
 @dataclass
@@ -102,9 +81,6 @@ class ResourceSummarizer:
         return query_engine.query(query)
 
 
-from typing import Union
-
-
 def create_resource_summarizer(
     resource_location: Hashable,
     ingest: IngestionStrategy,
@@ -120,8 +96,8 @@ def create_resource_summarizer(
     summarizer = ResourceSummarizer(layers)
     return summarizer
 
-breakpoint()
 
+breakpoint()
 
 from argparse import ArgumentParser, Namespace
 
@@ -136,6 +112,8 @@ def get_args() -> Namespace:
         help="The location of the configuration file.",
         metavar="CONFIG_LOCATION",
     )
+
+
 breakpoint()
 
 from pathlib import Path
