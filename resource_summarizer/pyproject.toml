@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "resource-summarizer"
+version = "0.1.0"
+description = "a simple LLM-based tool to summarize important information in a resource at a specific location (pdf, text file, webpage, etc.)."
+authors = ["Mengyang (John) Cha <15233508+solarapparition@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "resource_summarizer"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+llama-index = "^0.7.3"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.17.4"
+black = "^23.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
