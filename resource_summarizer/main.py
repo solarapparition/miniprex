@@ -11,15 +11,33 @@ from resource_summarizer.summarizer import create_summarizer
 
 
 
-    parser = ArgumentParser()
-    parser.add_argument(
-        "--config",
-        dest="config_file",
-        help="The location of the configuration file.",
-        metavar="CONFIG_LOCATION",
-    )
+from pathlib import Path
+from llama_index import Document
+from typing import Hashable, Sequence
+
+def main() -> None:
+    """Demos the creating of a resource summarizer for a text file."""
+
+    resource_location = "data/paul_graham_essay.txt"
+
+    def ingest(resource_location: str) -> Sequence[Document]:
+        """Ingest a text file."""
+        chunks = Path(resource_location).read_text(encoding="utf-8").split("\n\n")
+        chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
+        documents = [Document(text=chunk) for chunk in chunks]
+        return documents
 
 
+    from schema import Layer, Partition
+    breakpoint()
+    def partition(layer: Layer) -> Partition:
+        breakpoint()
+
+    summarizer = create_summarizer(resource_location, ingest, partition, None, None)
+    breakpoint()
+
+if __name__ == "__main__":
+    main()
 breakpoint()
 
 from pathlib import Path
