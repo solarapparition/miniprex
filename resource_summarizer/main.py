@@ -124,14 +124,6 @@ breakpoint()
 
 
 from argparse import ArgumentParser, Namespace
-import sys
-
-sys.path.append("")
-
-from simple_assistant.core import run_assistant
-
-DEFAULT_CONFIG = "default"
-DEFAULT_CONVERSATION = "default"
 
 
 def get_args() -> Namespace:
@@ -143,12 +135,7 @@ def get_args() -> Namespace:
         dest="config_file",
         help="The location of the configuration file.",
         metavar="CONFIG_LOCATION",
-def main() -> None:
-    """"""
-
-    ...
-
-
+    )
 breakpoint()
 
 from pathlib import Path
