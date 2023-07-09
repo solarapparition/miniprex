@@ -1,10 +1,14 @@
 """Create a resource summarizer for a text file."""
 
+from more_itertools import batched
 from pathlib import Path
 from typing import Sequence
 
 from llama_index import Document
+from llama_index import VectorStoreIndex
+from llama_index.schema import TextNode
 from resource_summarizer.summarizer import create_summarizer
+from resource_summarizer.schema import Layer, Partition
 
 
 def main() -> None:
@@ -20,10 +24,26 @@ def main() -> None:
         return documents
 
 
-    from resource_summarizer.schema import Layer, Partition
-    breakpoint()
-    def partition(layer: Layer) -> Partition:
-        breakpoint()
+    def demo_create_index(documents: Sequence[Document]) -> VectorStoreIndex:
+        """Create basic vector index."""
+        index = VectorStoreIndex.from_documents(documents)
+        return index
+
+    def demo_partition(layer: Layer) -> Partition:
+        """Example partition that takes groups of 5 sequential documents (paragraphs in the demo) to create a block."""
+        docs, _ = layer
+        nodes = [TextNode(text=doc.text) for doc in docs]
+        node_batches = [list(node_batch) for node_batch in batched(nodes, 5)]
+        return node_batches
+
+    from resource_summarizer.schema import Block
+    def demo_summarize(block: Block) -> Document:
+        """Example summarization via simple LLM prompting."""
+        from langchain.schema import SystemMessage, HumanMessage, AIMessage
+        from langchain.chat_models import ChatOpenAI
+
+        system_message = SystemMessage(content=REWRITE_CONCISE)
+
 
     summarizer = create_summarizer(resource_location, ingest, partition, None, None)
     breakpoint()
