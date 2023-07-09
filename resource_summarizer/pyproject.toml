@@ -10,6 +10,7 @@ packages = [{include = "resource_summarizer"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 llama-index = "^0.7.3"
+more-itertools = "^9.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.4"
