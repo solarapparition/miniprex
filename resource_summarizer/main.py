@@ -41,7 +41,7 @@ def main() -> None:
 
     resource_location = "data/paul_graham_essay.txt"
 
-    def ingest(resource_location: str) -> Sequence[Document]:
+    def demo_ingest(resource_location: str) -> Sequence[Document]:
         """Ingest a text file."""
         chunks = Path(resource_location).read_text(encoding="utf-8").split("\n\n")
         chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
@@ -91,10 +91,11 @@ def main() -> None:
     )
     breakpoint()
 
+
 if __name__ == "__main__":
     main()
-breakpoint()
 
+breakpoint()
 
 chunks = Path("data/paul_graham_essay.txt").read_text().split("\n\n")
 chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
@@ -135,7 +136,7 @@ layers[1] = abstract_layer(layers[0])
 
 # take in list of chunks as input
 # ....
-# > 
+# >
 # > add retriever and chat engine to summarizer object
 # set up layered indexing system
 # readme: different spin on tree index

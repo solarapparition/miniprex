@@ -1,47 +1,44 @@
 """Creation of resource summarization."""
 
 from dataclasses import dataclass
-from typing import Any, Callable, Hashable, Sequence, Tuple, Union
+from typing import Any, Hashable, Sequence, Union
 
 from llama_index import Document
-from llama_index.schema import TextNode
-from llama_index.indices.base import BaseIndex
 from llama_index.response.schema import RESPONSE_TYPE as LLAMA_INDEX_RESPONSE_TYPE
 
-Block = Sequence[TextNode]
-Partition = Sequence[Block]
-Layer = Tuple[Sequence[Document], BaseIndex[Any]]
-PartitionStrategy = Callable[[Layer], Partition]
-SummarizationStrategy = Callable[[Block], Document]
-IndexStrategy = Callable[[Sequence[Document]], BaseIndex[Any]]
-IngestionStrategy = Callable[[Hashable], Sequence[Document]]
-PersistenceStrategy = Callable[[BaseIndex[Any]], None]
+from .schema import (
+    IndexStrategy,
+    IngestionStrategy,
+    Layer,
+    PartitionStrategy,
+    SummarizationStrategy,
+)
 
 
 def create_next_layer(
     current_layer: Layer,
-    partition: PartitionStrategy,
-    summarize: SummarizationStrategy,
-    create_index: IndexStrategy,
+    partition_strategy: PartitionStrategy,
+    summarization_strategy: SummarizationStrategy,
+    index_strategy: IndexStrategy,
 ) -> Layer:
     """Creates the next summarization layer."""
 
-    blocks = partition(current_layer)
-    next_layer_docs = [summarize(block) for block in blocks]
-    next_layer_index = create_index(next_layer_docs)
+    blocks = partition_strategy(current_layer)
+    next_layer_docs = [summarization_strategy(block) for block in blocks]
+    next_layer_index = index_strategy(next_layer_docs)
     return next_layer_docs, next_layer_index
 
 
 def create_layers(
     initial_docs: Sequence[Document],
-    partition: PartitionStrategy,
-    summarize: SummarizationStrategy,
-    create_index: IndexStrategy,
+    partition_strategy: PartitionStrategy,
+    summarization_strategy: SummarizationStrategy,
+    index_strategy: IndexStrategy,
     n_layers: Union[int, None] = None,
 ) -> Sequence[Layer]:
     """Creates a sequence of summarization layers."""
 
-    layer_0 = initial_docs, create_index(initial_docs)
+    layer_0 = initial_docs, index_strategy(initial_docs)
     layers = [layer_0]
     while not n_layers or len(layers) < n_layers:
         current_layer = layers[-1]
@@ -49,7 +46,12 @@ def create_layers(
         if len(current_layer_docs) == 1:
             break
         layers.append(
-            create_next_layer(current_layer, partition, summarize, create_index)
+            create_next_layer(
+                current_layer,
+                partition_strategy,
+                summarization_strategy,
+                index_strategy,
+            )
         )
     return layers
 
@@ -83,15 +85,18 @@ class ResourceSummarizer:
 
 def create_summarizer(
     resource_location: Hashable,
-    ingest: IngestionStrategy,
-    partition: PartitionStrategy,
-    summarize: SummarizationStrategy,
-    create_index: IndexStrategy,
+    *,
+    ingestion_strategy: IngestionStrategy,
+    partition_strategy: PartitionStrategy,
+    summarization_strategy: SummarizationStrategy,
+    indexing_strategy: IndexStrategy,
     n_layers: Union[int, None] = None,
 ) -> ResourceSummarizer:
     """Create a resource summarizer."""
 
-    docs = ingest(resource_location)
-    layers = create_layers(docs, partition, summarize, create_index, n_layers)
+    docs = ingestion_strategy(resource_location)
+    layers = create_layers(
+        docs, partition_strategy, summarization_strategy, indexing_strategy, n_layers
+    )
     summarizer = ResourceSummarizer(layers)
     return summarizer
