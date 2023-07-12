@@ -50,6 +50,7 @@ If you understand these instructions, respond with "Acknowledged"."""
 
 ACKNOWLEDGEMENT = """Acknowledged."""
 
+
 def main() -> None:
     """Demos the creating of a resource summarizer for a text file."""
 
@@ -62,7 +63,6 @@ def main() -> None:
         documents = [Document(text=chunk) for chunk in chunks]
         return documents
 
-
     def demo_create_index(documents: Sequence[Document]) -> VectorStoreIndex:
         """Create basic vector index."""
         index = VectorStoreIndex.from_documents(documents)
@@ -71,86 +71,45 @@ def main() -> None:
     def demo_partition(layer: Layer) -> Partition:
         """Example partition that takes groups of 5 sequential documents (paragraphs in the demo) to create a block."""
         docs, _ = layer
-        nodes = [TextNode(text=doc.text) for doc in docs]
+        docs = [doc.text.split("\n\n") for doc in docs]
+        docs = list(chain.from_iterable(docs))
+        nodes = [TextNode(text=doc) for doc in docs]
         node_batches = [list(node_batch) for node_batch in batched(nodes, 5)]
         return node_batches
 
-    from resource_summarizer.schema import Block
     def demo_summarize(block: Block) -> Document:
-        """Example summarization via simple LLM prompting."""
-        from langchain.schema import SystemMessage, HumanMessage, AIMessage
-        from langchain.chat_models import ChatOpenAI
-
-        system_message = SystemMessage(content=REWRITE_CONCISE)
-
-
-
-
-
-
-
-
-        breakpoint()
-        input_message = HumanMessage(
-            content=WRITE_KB_INPUT.format(topic=topic, context=context, raw_text=raw_text)
+        """Example summarization via LLM."""
+        instruction_message = SystemMessage(
+            content=REWRITE_CONCISE.format(word_count=SUMMARY_SIZE)
         )
-        
+        acknowledgement_message = AIMessage(content=ACKNOWLEDGEMENT)
+
+        yaml = YAML()
+        yaml.default_flow_style = False
+        yaml.default_style = "|"
+        yaml.allow_unicode = True
+
+        input = {
+            "resource_context": RESOURCE_CONTEXT,
+            "excerpts": [node.text for node in block],
+        }
+        stringio = StringIO()
+        yaml.dump(input, stringio)
+        input = f"```yaml\n{stringio.getvalue()}\n```"
+        input_message = HumanMessage(content=input)
+        model = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo", verbose=True)
+        result = model(
+            [instruction_message, acknowledgement_message, input_message]
+        ).content
+        return Document(text=result)
 
     summarizer = create_summarizer(
         resource_location,
         ingestion_strategy=demo_ingest,
         partition_strategy=demo_partition,
-        summarization_strategy=None,
+        summarization_strategy=demo_summarize,
         indexing_strategy=demo_create_index,
+        n_layers=4,
     )
+
     breakpoint()
-
-
-if __name__ == "__main__":
-    main()
-
-breakpoint()
-
-chunks = Path("data/paul_graham_essay.txt").read_text().split("\n\n")
-chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
-from llama_index import Document
-
-documents = [Document(text=chunk) for chunk in chunks]
-
-from llama_index import TreeIndex, DocumentSummaryIndex
-
-# tree_index = TreeIndex.from_documents(documents)
-# tree_index
-
-summary_index = DocumentSummaryIndex.from_documents(documents[:10])
-retriever = summary_index.as_retriever()
-
-breakpoint()
-
-
-@dataclass
-class KnowledgeLayer:
-    """A layer of knowledge."""
-
-    chunks: Sequence[str]
-    """Text chunks for the layer."""
-
-
-layers: Sequence[KnowledgeLayer]
-
-
-def extract_test_chunks() -> Sequence[str]:
-    """Extracts chunks from test file."""
-
-
-layers[0] = extract_test_chunks()
-breakpoint()
-layers[1] = abstract_layer(layers[0])
-
-
-# take in list of chunks as input
-# ....
-# >
-# > add retriever and chat engine to summarizer object
-# set up layered indexing system
-# readme: different spin on tree index
