@@ -1,6 +1,7 @@
 """Creation of resource summarization."""
 
 from dataclasses import dataclass
+import logging
 from typing import Any, Hashable, Sequence, Union
 
 from llama_index import Document
@@ -14,6 +15,8 @@ from .schema import (
     SummarizationStrategy,
 )
 
+logging.basicConfig(level=logging.INFO)
+
 
 def create_next_layer(
     current_layer: Layer,
@@ -24,7 +27,11 @@ def create_next_layer(
     """Creates the next summarization layer."""
 
     blocks = partition_strategy(current_layer)
-    next_layer_docs = [summarization_strategy(block) for block in blocks]
+    next_layer_docs: Sequence[Document] = []
+
+    for block in blocks:
+        logging.info("Summarizing block %s/%s.", len(next_layer_docs) + 1, len(blocks))
+        next_layer_docs.append(summarization_strategy(block))
     next_layer_index = index_strategy(next_layer_docs)
     return next_layer_docs, next_layer_index
 
@@ -45,6 +52,7 @@ def create_layers(
         current_layer_docs, _ = current_layer
         if len(current_layer_docs) == 1:
             break
+        logging.info("Creating layer %s.", len(layers) + 1)
         layers.append(
             create_next_layer(
                 current_layer,
